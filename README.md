@@ -1,5 +1,5 @@
 # Game Title
-## Author:
+## Author: Natalia Iwańska
 
 ### Short description
 
