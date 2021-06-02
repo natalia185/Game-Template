@@ -1,4 +1,5 @@
 import arcade
+import random
 
 # Global constants
 SCREEN_WIDTH = 800
@@ -6,6 +7,8 @@ SCREEN_HEIGHT = 600
 SCREEN_TITILE = 'PACMAN'
 SPRITE_SCALING = 0.3
 PLAYER_MOVEMENT_SPEED = 5
+ENEMY_MOVEMENT_SPEED = 1
+ENEMY_LIST = ["./images/pink.png", "./images/blue.png", "./images/orange.png", "./images/red.png"]
 
 
 class MenuView(arcade.View):
@@ -31,9 +34,13 @@ class MenuView(arcade.View):
 
 
 class Player(arcade.Sprite):
-
+    '''
+    Class represents player on screen.
+    '''
     def update(self):
-        #Checks and sets boundaries
+        '''
+        Function sets appropriate ranges
+        '''
         if self.left < 0:
             self.left = 0
         elif self.right > SCREEN_WIDTH - 1:
@@ -45,7 +52,28 @@ class Player(arcade.Sprite):
             self.bottom = 0
 
 
+class Enemy(arcade.Sprite):
+    '''
+    Class represents enemies on screen.
+    '''
+    def follow_sprite(self, player_sprite):
+        '''
+        The function will move the current sprite in the direction of
+        another sprite that is given as a parameter.
+        '''
+        if self.center_y < player_sprite.center_y:
+            self.center_y += ENEMY_MOVEMENT_SPEED
+        elif self.center_y > player_sprite.center_y:
+            self.center_y -= ENEMY_MOVEMENT_SPEED
+
+        if self.center_x < player_sprite.center_x:
+            self.center_x += ENEMY_MOVEMENT_SPEED
+        elif self.center_x > player_sprite.center_x:
+            self.center_x -= ENEMY_MOVEMENT_SPEED
+
+
 class GameView(arcade.View):
+
     def __init__(self):
         super().__init__()
 
@@ -76,6 +104,13 @@ class GameView(arcade.View):
         self.player_list.append(self.player_sprite)
 
         self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
+
+        # Set up enemies
+        for element in range(3):
+            self.enemy = Enemy(random.choice(ENEMY_LIST), SPRITE_SCALING)
+            self.enemy.center_x = random.randrange(SCREEN_WIDTH - 10)
+            self.enemy.center_y = random.randrange(SCREEN_HEIGHT - 30)
+            self.enemy_list.append(self.enemy)
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP:
@@ -116,6 +151,17 @@ class GameView(arcade.View):
 
         self.player_list.update()
 
+        # Enemies movement
+        for enemy in self.enemy_list:
+            enemy.follow_sprite(self.player_sprite)
+
+        # Check collision between enemies and the player
+        collision_list = arcade.check_for_collision_with_list(self.player_sprite, self.enemy_list)
+        if len(collision_list) == 1:
+            view = GameOverView()
+            self.window.show_view(view)
+            self.window.set_mouse_visible(True)
+
     def on_show(self):
         # Set the background color
         arcade.set_background_color(arcade.color.BLACK)
@@ -126,6 +172,28 @@ class GameView(arcade.View):
         self.enemy_list.draw()
         self.wall_list.draw()
         self.point_list.draw()
+
+
+class GameOverView(arcade.View):
+
+    def __init__(self):
+        super().__init__()
+
+    def on_show(self):
+        arcade.set_background_color(arcade.color.BLACK)
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text("Gra skończona", SCREEN_WIDTH / 2, SCREEN_HEIGHT/1.3,
+                         arcade.color.YELLOW_ORANGE, font_size=40, anchor_x="center")
+        arcade.draw_text("Naciśnij, aby zagrać ponownie.", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.5,
+                         arcade.color.YELLOW_ORANGE, font_size=15, anchor_x="center")
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        game_view = GameView()
+        self.window.show_view(game_view)
+        self.window.set_mouse_visible(False)
+        game_view.setup()
 
 
 def main():
