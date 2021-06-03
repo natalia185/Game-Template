@@ -1,11 +1,12 @@
 import arcade
 import random
+import maps
 
 # Global constants
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 SCREEN_TITILE = 'PACMAN'
-SPRITE_SCALING = 0.3
+SPRITE_SCALING = 0.5
 PLAYER_MOVEMENT_SPEED = 5
 ENEMY_MOVEMENT_SPEED = 1
 ENEMY_LIST = ["./images/pink.png", "./images/blue.png", "./images/orange.png", "./images/red.png"]
@@ -98,9 +99,12 @@ class GameView(arcade.View):
         self.wall_list = arcade.SpriteList(use_spatial_hash=True)
         self.point_list = arcade.SpriteList(use_spatial_hash=True)
 
+        # Set up walls
+        self.wall_list = maps.level_1()
+
         # Set up the player
         self.player_sprite = Player("./images/pacman.png", SPRITE_SCALING)
-        self.player_sprite.position = (40, 50)
+        self.player_sprite.position = (50, 290)
         self.player_list.append(self.player_sprite)
 
         self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
@@ -157,7 +161,7 @@ class GameView(arcade.View):
 
         # Check collision between enemies and the player
         collision_list = arcade.check_for_collision_with_list(self.player_sprite, self.enemy_list)
-        if len(collision_list) == 1:
+        if len(collision_list) != 0:
             view = GameOverView()
             self.window.show_view(view)
             self.window.set_mouse_visible(True)
@@ -168,9 +172,9 @@ class GameView(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
+        self.wall_list.draw()
         self.player_list.draw()
         self.enemy_list.draw()
-        self.wall_list.draw()
         self.point_list.draw()
 
 
