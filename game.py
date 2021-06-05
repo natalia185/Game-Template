@@ -94,6 +94,10 @@ class GameView(arcade.View):
         self.physics_engine = None
         self.score = 0
 
+        # Load sounds
+        self.collect_points_sound = arcade.load_sound("./sounds/mixkit-game-ball-tap-2073.wav")
+        self.kill_sound = arcade.load_sound("./sounds/mixkit-player-losing-or-failing-2042.wav")
+
     def setup(self):
         # Sprite lists
         self.player_list = arcade.SpriteList()
@@ -167,6 +171,7 @@ class GameView(arcade.View):
         # Check collision between enemies and the player
         collision_list = arcade.check_for_collision_with_list(self.player_sprite, self.enemy_list)
         if len(collision_list) != 0:
+            arcade.play_sound(self.kill_sound)
             view = GameOverView()
             self.window.show_view(view)
             self.window.set_mouse_visible(True)
@@ -176,6 +181,7 @@ class GameView(arcade.View):
         point_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.point_list)
         for point in point_hit_list:
             point.remove_from_sprite_lists()
+            arcade.play_sound(self.collect_points_sound)
             self.score += 1
 
     def on_show(self):
