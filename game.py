@@ -1,6 +1,7 @@
 import arcade
 import random
 import maps
+import points
 
 # Global constants
 SCREEN_WIDTH = 800
@@ -40,7 +41,7 @@ class Player(arcade.Sprite):
     '''
     def update(self):
         '''
-        Function sets appropriate ranges
+        Function sets appropriate ranges.
         '''
         if self.left < 0:
             self.left = 0
@@ -91,6 +92,7 @@ class GameView(arcade.View):
         self.down_pressed = False
 
         self.physics_engine = None
+        self.score = 0
 
     def setup(self):
         # Sprite lists
@@ -112,9 +114,12 @@ class GameView(arcade.View):
         # Set up enemies
         for element in range(3):
             self.enemy = Enemy(random.choice(ENEMY_LIST), SPRITE_SCALING)
-            self.enemy.center_x = random.randrange(SCREEN_WIDTH - 10)
-            self.enemy.center_y = random.randrange(SCREEN_HEIGHT - 30)
+            self.enemy.center_x = random.randrange(400, SCREEN_WIDTH - 20)
+            self.enemy.center_y = random.randrange(SCREEN_HEIGHT - 60)
             self.enemy_list.append(self.enemy)
+
+        # Set up points
+        self.point_list = points.level_1()
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP:
@@ -166,6 +171,13 @@ class GameView(arcade.View):
             self.window.show_view(view)
             self.window.set_mouse_visible(True)
 
+        # Score update
+        self.point_list.update()
+        point_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.point_list)
+        for point in point_hit_list:
+            point.remove_from_sprite_lists()
+            self.score += 1
+
     def on_show(self):
         # Set the background color
         arcade.set_background_color(arcade.color.BLACK)
@@ -173,9 +185,11 @@ class GameView(arcade.View):
     def on_draw(self):
         arcade.start_render()
         self.wall_list.draw()
+        self.point_list.draw()
         self.player_list.draw()
         self.enemy_list.draw()
-        self.point_list.draw()
+        output = f"Wynik: {self.score}"
+        arcade.draw_text(output, 10, 570, arcade.color.YELLOW_ORANGE, 18)
 
 
 class GameOverView(arcade.View):
