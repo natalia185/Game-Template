@@ -106,10 +106,12 @@ class GameView(arcade.View):
         self.player_sprite = None
         self.physics_engine = None
         self.score = 0
+        self.level = 1
 
         #Load sounds
         self.collect_points_sound = arcade.load_sound("./sounds/mixkit-game-ball-tap-2073.wav")
         self.kill_sound = arcade.load_sound("./sounds/mixkit-player-losing-or-failing-2042.wav")
+        self.next_level_sound = arcade.load_sound("./sounds/mixkit-extra-bonus-in-a-video-game-2045.wav")
 
     def setup(self):
         '''
@@ -228,6 +230,13 @@ class GameView(arcade.View):
             arcade.play_sound(self.collect_points_sound)
             self.score += 1
 
+        #Change level
+        self.point_list.update()
+        if len(self.point_list) == 0:
+            self.level += 1
+            arcade.play_sound(self.next_level_sound)
+            self.setup()
+
     def on_show(self):
         #Set the background color
         arcade.set_background_color(arcade.color.BLACK)
@@ -238,8 +247,10 @@ class GameView(arcade.View):
         self.point_list.draw()
         self.player_list.draw()
         self.enemy_list.draw()
-        output = f"Wynik: {self.score}"
-        arcade.draw_text(output, 10, 570, arcade.color.YELLOW_ORANGE, 18)
+        score = f"Wynik: {self.score}"
+        arcade.draw_text(score, 10, 570, arcade.color.YELLOW_ORANGE, 18)
+        level = f"Poziom {self.level}"
+        arcade.draw_text(level, 360, 570, arcade.color.YELLOW_ORANGE, 18)
 
 
 class GameOverView(arcade.View):
