@@ -8,7 +8,7 @@ import points
 #Global constants
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-SCREEN_TITILE = 'PACMAN'
+SCREEN_TITLE = 'PACMAN'
 SPRITE_SCALING = 0.5
 PLAYER_MOVEMENT_SPEED = 5
 ENEMY_MOVEMENT_SPEED = 1
@@ -108,6 +108,10 @@ class GameView(arcade.View):
         self.score = 0
         self.level = 1
 
+        #Player lives
+        self.player_lives = 3
+        self.player_live_image = None
+
         #Load sounds
         self.collect_points_sound = arcade.load_sound("./sounds/mixkit-game-ball-tap-2073.wav")
         self.kill_sound = arcade.load_sound("./sounds/mixkit-player-losing-or-failing-2042.wav")
@@ -142,6 +146,9 @@ class GameView(arcade.View):
 
         #Set up points
         self.point_list = points.level_1()
+
+        #Load player live
+        self.player_live_image = arcade.load_texture("./images/pacman_live.png")
 
     def on_key_press(self, key, modifiers):
         '''
@@ -193,8 +200,12 @@ class GameView(arcade.View):
             enemy.follow_sprite(self.player_sprite)
 
         #Check collision between enemies and the player
-        collision_list = arcade.check_for_collision_with_list(self.player_sprite, self.enemy_list)
-        if len(collision_list) != 0:
+        if arcade.check_for_collision_with_list(self.player_sprite, self.enemy_list):
+            arcade.play_sound(self.kill_sound)
+            self.player_sprite.position = (50, 290)
+            self.player_lives -= 1
+
+        if self.player_lives == 0:
             arcade.play_sound(self.kill_sound)
             view = GameOverView()
             self.window.show_view(view)
@@ -247,10 +258,12 @@ class GameView(arcade.View):
         self.point_list.draw()
         self.player_list.draw()
         self.enemy_list.draw()
-        score = f"Wynik: {self.score}"
-        arcade.draw_text(score, 10, 570, arcade.color.YELLOW_ORANGE, 18)
-        level = f"Poziom {self.level}"
-        arcade.draw_text(level, 360, 570, arcade.color.YELLOW_ORANGE, 18)
+
+        for y in range(self.player_lives):
+            arcade.draw_lrwh_rectangle_textured(5, 15 + 30 * y, 30, 30, self.player_live_image)
+
+        arcade.draw_text(f"Wynik: {self.score}", 10, 570, arcade.color.YELLOW_ORANGE, 18)
+        arcade.draw_text(f"Poziom {self.level}", 360, 570, arcade.color.YELLOW_ORANGE, 18)
 
 
 class GameOverView(arcade.View):
@@ -279,7 +292,7 @@ def main():
     '''
     Main method
     '''
-    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITILE)
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     window.set_location(400, 150)
     start_view = MenuView()
     window.show_view(start_view)
