@@ -1,9 +1,11 @@
 import arcade
 import random
+import math
 import maps
 import points
 
-# Global constants
+
+#Global constants
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 SCREEN_TITILE = 'PACMAN'
@@ -26,7 +28,7 @@ class MenuView(arcade.View):
         arcade.start_render()
         arcade.draw_lrwh_rectangle_textured(300, 530, 200, 50, self.logo)
         arcade.draw_text('Menu', SCREEN_WIDTH/2, SCREEN_HEIGHT/1.3,
-                         arcade.color.YELLOW_ORANGE, font_size = 30, anchor_x = "center")
+                         arcade.color.YELLOW_ORANGE, font_size=30, anchor_x="center")
 
     def on_mouse_press(self, x, y, button, modifiers):
         game_view = GameView()
@@ -58,20 +60,30 @@ class Enemy(arcade.Sprite):
     '''
     Class represents enemies on screen.
     '''
+
     def follow_sprite(self, player_sprite):
         '''
         The function will move the current sprite in the direction of
         another sprite that is given as a parameter.
         '''
-        if self.center_y < player_sprite.center_y:
-            self.center_y += ENEMY_MOVEMENT_SPEED
-        elif self.center_y > player_sprite.center_y:
-            self.center_y -= ENEMY_MOVEMENT_SPEED
+        self.center_x += self.change_x
+        self.center_y += self.change_y
 
-        if self.center_x < player_sprite.center_x:
-            self.center_x += ENEMY_MOVEMENT_SPEED
-        elif self.center_x > player_sprite.center_x:
-            self.center_x -= ENEMY_MOVEMENT_SPEED
+        if random.randrange(0, 50) == 0:
+            start_x = self.center_x
+            start_y = self.center_y
+
+            #Get the player location
+            player_x = player_sprite.center_x
+            player_y = player_sprite.center_y
+
+            #Calculation the angle between the position of the player and the enemy
+            x_diff = player_x - start_x
+            y_diff = player_y - start_y
+            angle = math.atan2(y_diff, x_diff)
+
+            self.change_x = math.cos(angle) * ENEMY_MOVEMENT_SPEED
+            self.change_y = math.sin(angle) * ENEMY_MOVEMENT_SPEED
 
 
 class GameView(arcade.View):
@@ -79,53 +91,60 @@ class GameView(arcade.View):
     def __init__(self):
         super().__init__()
 
-        # Variables that will hold sprite lists
+        #Variables that will hold sprite lists
         self.player_list = None
         self.enemy_list = None
         self.wall_list = None
         self.point_list = None
 
-        # Motion control keys
+        #Motion control keys
         self.left_pressed = False
         self.right_pressed = False
         self.up_pressed = False
         self.down_pressed = False
 
+        self.player_sprite = None
         self.physics_engine = None
         self.score = 0
 
-        # Load sounds
+        #Load sounds
         self.collect_points_sound = arcade.load_sound("./sounds/mixkit-game-ball-tap-2073.wav")
         self.kill_sound = arcade.load_sound("./sounds/mixkit-player-losing-or-failing-2042.wav")
 
     def setup(self):
-        # Sprite lists
+        '''
+        Set up the game and initialize the variables.
+        '''
+        #Sprite lists
         self.player_list = arcade.SpriteList()
         self.enemy_list = arcade.SpriteList()
         self.wall_list = arcade.SpriteList(use_spatial_hash=True)
         self.point_list = arcade.SpriteList(use_spatial_hash=True)
 
-        # Set up walls
+        #Set up walls
         self.wall_list = maps.level_1()
 
-        # Set up the player
+        #Set up the player
         self.player_sprite = Player("./images/pacman.png", SPRITE_SCALING)
         self.player_sprite.position = (50, 290)
         self.player_list.append(self.player_sprite)
 
         self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
 
-        # Set up enemies
-        for element in range(3):
-            self.enemy = Enemy(random.choice(ENEMY_LIST), SPRITE_SCALING)
-            self.enemy.center_x = random.randrange(400, SCREEN_WIDTH - 20)
-            self.enemy.center_y = random.randrange(SCREEN_HEIGHT - 60)
-            self.enemy_list.append(self.enemy)
+        #Set up enemies
+        for enemy_im in ENEMY_LIST:
+            enemy = Enemy(enemy_im, SPRITE_SCALING)
+            enemy.center_x = 720
+            enemy.center_y = random.randint(100, SCREEN_HEIGHT - 100)
+            self.enemy_list.append(enemy)
 
-        # Set up points
+        #Set up points
         self.point_list = points.level_1()
 
     def on_key_press(self, key, modifiers):
+        '''
+        Called when a key is pressed.
+        '''
         if key == arcade.key.UP:
             self.up_pressed = True
         elif key == arcade.key.DOWN:
@@ -136,6 +155,9 @@ class GameView(arcade.View):
             self.right_pressed = True
 
     def on_key_release(self, key, modifiers):
+        '''
+        Called when the user releases a key.
+        '''
         if key == arcade.key.UP:
             self.up_pressed = False
             self.player_sprite.change_y = 0
@@ -150,7 +172,7 @@ class GameView(arcade.View):
             self.player_sprite.change_x = 0
 
     def update(self, delta_time):
-        # Player movement
+        #Player movement
         self.physics_engine.update()
 
         if self.up_pressed and not self.down_pressed:
@@ -164,11 +186,11 @@ class GameView(arcade.View):
 
         self.player_list.update()
 
-        # Enemies movement
+        #Enemies movement
         for enemy in self.enemy_list:
             enemy.follow_sprite(self.player_sprite)
 
-        # Check collision between enemies and the player
+        #Check collision between enemies and the player
         collision_list = arcade.check_for_collision_with_list(self.player_sprite, self.enemy_list)
         if len(collision_list) != 0:
             arcade.play_sound(self.kill_sound)
@@ -176,7 +198,29 @@ class GameView(arcade.View):
             self.window.show_view(view)
             self.window.set_mouse_visible(True)
 
-        # Score update
+        #Enemies collision with walls
+        for enemy in self.enemy_list:
+            enemy.center_x += enemy.change_x
+            walls_hit = arcade.check_for_collision_with_list(enemy, self.wall_list)
+            for wall in walls_hit:
+                if enemy.change_x > 0:
+                    enemy.right = wall.left
+                elif enemy.change_x < 0:
+                    enemy.left = wall.right
+            if len(walls_hit) > 0:
+                enemy.change_x *= -1
+
+            enemy.center_y += enemy.change_y
+            walls_hit = arcade.check_for_collision_with_list(enemy, self.wall_list)
+            for wall in walls_hit:
+                if enemy.change_y > 0:
+                    enemy.top = wall.bottom
+                elif enemy.change_y < 0:
+                    enemy.bottom = wall.top
+            if len(walls_hit) > 0:
+                enemy.change_y *= -1
+
+        #Score update
         self.point_list.update()
         point_hit_list = arcade.check_for_collision_with_list(self.player_sprite, self.point_list)
         for point in point_hit_list:
@@ -185,7 +229,7 @@ class GameView(arcade.View):
             self.score += 1
 
     def on_show(self):
-        # Set the background color
+        #Set the background color
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
@@ -221,7 +265,9 @@ class GameOverView(arcade.View):
 
 
 def main():
-    '''Main method'''
+    '''
+    Main method
+    '''
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITILE)
     window.set_location(400, 150)
     start_view = MenuView()
