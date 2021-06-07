@@ -26,9 +26,10 @@ def frame():
 
     return wall_list
 
+
 def level_1():
     '''
-    Function create game map for level 1.
+    Function create game map for easy mode.
     '''
     wall_list = frame()
 
@@ -147,7 +148,7 @@ def level_1():
 
 def level_2():
     '''
-    Function create game map for level 2.
+    Function create game map for medium mode.
     '''
     wall_list = frame()
 
@@ -238,6 +239,98 @@ def level_2():
     for y in range(5):
         x = 400
         y = 495 + 15 * y
+        wall = arcade.Sprite("./images/block.png", SCALING)
+        wall.position = (x, y)
+        wall_list.append(wall)
+
+    return wall_list
+
+
+def level_3():
+    '''
+    Function create game map for hard mode.
+    '''
+    wall_list = frame()
+    for x in [115, 690]:
+        for y in range(12):
+            y = 330 + 15 * y
+            wall = arcade.Sprite("./images/block.png", SCALING)
+            wall.position = (x, y)
+            wall_list.append(wall)
+
+    for x in [115, 690]:
+        for y in range(12):
+            y = 80 + 15 * y
+            wall = arcade.Sprite("./images/block.png", SCALING)
+            wall.position = (x, y)
+            wall_list.append(wall)
+
+    for x in [185, 625]:
+        for y in range(20):
+            y = 145 + 15 * y
+            wall = arcade.Sprite("./images/block.png", SCALING)
+            wall.position = (x, y)
+            wall_list.append(wall)
+
+    for x in [260, 545]:
+        for y in range(6):
+            y = 145 + 15 * y
+            wall = arcade.Sprite("./images/block.png", SCALING)
+            wall.position = (x, y)
+            wall_list.append(wall)
+
+    for x in [260, 545]:
+        for y in range(5):
+            y = 370 + 15 * y
+            wall = arcade.Sprite("./images/block.png", SCALING)
+            wall.position = (x, y)
+            wall_list.append(wall)
+
+    for x in range(20):
+        y = 295
+        x = 260 + 15 * x
+        wall = arcade.Sprite("./images/block.png", SCALING)
+        wall.position = (x, y)
+        wall_list.append(wall)
+
+    for y in [220, 370]:
+        for x in range(10):
+            x = 335 + 15 * x
+            wall = arcade.Sprite("./images/block.png", SCALING)
+            wall.position = (x, y)
+            wall_list.append(wall)
+
+    for y in [145, 430]:
+        for x in range(20):
+            x = 260 + 15 * x
+            wall = arcade.Sprite("./images/block.png", SCALING)
+            wall.position = (x, y)
+            wall_list.append(wall)
+
+    for y in [80, 495]:
+        for x in range(14):
+            x = 130 + 15 * x
+            wall = arcade.Sprite("./images/block.png", SCALING)
+            wall.position = (x, y)
+            wall_list.append(wall)
+
+    for y in [80, 495]:
+        for x in range(15):
+            x = 470 + 15 * x
+            wall = arcade.Sprite("./images/block.png", SCALING)
+            wall.position = (x, y)
+            wall_list.append(wall)
+
+    for y in range(9):
+        x = 400
+        y = 20 + 15 * y
+        wall = arcade.Sprite("./images/block.png", SCALING)
+        wall.position = (x, y)
+        wall_list.append(wall)
+
+    for y in range(9):
+        x = 400
+        y = 430 + 15 * y
         wall = arcade.Sprite("./images/block.png", SCALING)
         wall.position = (x, y)
         wall_list.append(wall)
