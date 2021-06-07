@@ -41,7 +41,7 @@ class MenuView(arcade.View):
 
 class LevelView(arcade.View):
     '''
-    Class representing the screen with the choice of difficulty level
+    Class representing the screen with the choice of difficulty mode.
     '''
 
     def on_show(self):
@@ -55,20 +55,34 @@ class LevelView(arcade.View):
                          arcade.color.YELLOW_ORANGE, font_size=25, anchor_x="center")
         arcade.draw_text('ŚREDNI - NACIŚNIJ S', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.7,
                          arcade.color.YELLOW_ORANGE, font_size=25, anchor_x="center")
+        arcade.draw_text('TRUDNY - NACIŚNIJ T', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2,
+                         arcade.color.YELLOW_ORANGE, font_size=25, anchor_x="center")
+        arcade.draw_text('Aby wrócić do Menu wciśnij spację.', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 8,
+                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.L:
             view = GameView()
-            view.user_level = 1
+            view.user_mode = 1
             self.window.show_view(view)
             self.window.set_mouse_visible(False)
             view.setup()
         elif key == arcade.key.S:
             view = GameView()
-            view.user_level = 2
+            view.user_mode = 2
             self.window.show_view(view)
             self.window.set_mouse_visible(False)
             view.setup()
+        elif key == arcade.key.T:
+            view = GameView()
+            view.user_mode = 3
+            self.window.show_view(view)
+            self.window.set_mouse_visible(False)
+            view.setup()
+        elif key == arcade.key.SPACE:
+            view = MenuView()
+            self.window.show_view(view)
+            self.window.set_mouse_visible(True)
 
 
 class Player(arcade.Sprite):
@@ -152,7 +166,7 @@ class GameView(arcade.View):
         self.next_level_sound = arcade.load_sound("./sounds/mixkit-extra-bonus-in-a-video-game-2045.wav")
 
         #User choice level
-        self.user_level = 1
+        self.user_mode = 1
 
     def setup(self):
         '''
@@ -165,12 +179,15 @@ class GameView(arcade.View):
         self.point_list = arcade.SpriteList(use_spatial_hash=True)
 
         #Set up walls and points
-        if self.user_level == 1:
+        if self.user_mode == 1:
             self.wall_list = maps.level_1()
             self.point_list = points.level_1()
-        elif self.user_level == 2:
+        elif self.user_mode == 2:
             self.wall_list = maps.level_2()
             self.point_list = points.level_2()
+        elif self.user_mode == 3:
+            self.wall_list = maps.level_3()
+            self.point_list = points.level_3()
 
         #Set up the player
         self.player_sprite = Player("./images/pacman.png", SPRITE_SCALING)
@@ -183,7 +200,7 @@ class GameView(arcade.View):
         for enemy_im in ENEMY_LIST:
             enemy = Enemy(enemy_im, SPRITE_SCALING)
             enemy.center_x = 720
-            enemy.center_y = random.randint(100, SCREEN_HEIGHT - 100)
+            enemy.center_y = random.randint(80, SCREEN_HEIGHT - 100)
             self.enemy_list.append(enemy)
 
         #Load player live
@@ -317,7 +334,7 @@ class GameOverView(arcade.View):
         arcade.start_render()
         arcade.draw_text("Gra skończona", SCREEN_WIDTH / 2, SCREEN_HEIGHT/1.3,
                          arcade.color.YELLOW_ORANGE, font_size=40, anchor_x="center")
-        arcade.draw_text("Naciśnij, aby zagrać ponownie.", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.5,
+        arcade.draw_text("Kliknij, aby zagrać ponownie.", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.5,
                          arcade.color.YELLOW_ORANGE, font_size=15, anchor_x="center")
 
     def on_mouse_press(self, x, y, button, modifiers):
