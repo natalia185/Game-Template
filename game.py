@@ -3,6 +3,7 @@ import random
 import math
 import maps
 import points
+import pickle
 
 
 #Global constants
@@ -16,6 +17,9 @@ ENEMY_LIST = ["./images/pink.png", "./images/blue.png", "./images/orange.png", "
 
 
 class MenuView(arcade.View):
+    '''
+    Class representing the game menu screen.
+    '''
 
     def __init__(self):
         super().__init__()
@@ -29,17 +33,29 @@ class MenuView(arcade.View):
         arcade.draw_lrwh_rectangle_textured(300, 530, 200, 50, self.logo)
         arcade.draw_text('Menu', SCREEN_WIDTH/2, SCREEN_HEIGHT/1.3,
                          arcade.color.YELLOW_ORANGE, font_size=30, anchor_x="center")
-        arcade.draw_text('Aby zagrać naciśnij klawisz P', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.5,
+        arcade.draw_text('Graj - naciśnij P', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.5,
+                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+        arcade.draw_text('Instrukcja  - naciśnij I', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.65,
+                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+        arcade.draw_text('Najlepsze wyniki - naciśnij N', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.85,
                          arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.P:
-            view = LevelView()
+            view = ModeView()
+            self.window.show_view(view)
+            self.window.set_mouse_visible(True)
+        elif key == arcade.key.I:
+            view = InstructionView()
+            self.window.show_view(view)
+            self.window.set_mouse_visible(True)
+        elif key == arcade.key.N:
+            view = BestScoreView()
             self.window.show_view(view)
             self.window.set_mouse_visible(True)
 
 
-class LevelView(arcade.View):
+class ModeView(arcade.View):
     '''
     Class representing the screen with the choice of difficulty mode.
     '''
@@ -57,8 +73,8 @@ class LevelView(arcade.View):
                          arcade.color.YELLOW_ORANGE, font_size=25, anchor_x="center")
         arcade.draw_text('TRUDNY - NACIŚNIJ T', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2,
                          arcade.color.YELLOW_ORANGE, font_size=25, anchor_x="center")
-        arcade.draw_text('Aby wrócić do Menu wciśnij spację.', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 8,
-                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+        arcade.draw_text("Aby wrócić do Menu wciśnij spację.", SCREEN_WIDTH / 2, 10,
+                         arcade.color.YELLOW_ORANGE, font_size=15, anchor_x="center")
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.L:
@@ -135,6 +151,9 @@ class Enemy(arcade.Sprite):
 
 
 class GameView(arcade.View):
+    '''
+    Class creating game and game view.
+    '''
 
     def __init__(self):
         super().__init__()
@@ -261,6 +280,7 @@ class GameView(arcade.View):
             self.player_sprite.position = (50, 290)
             self.player_lives -= 1
 
+        #End game
         if self.player_lives == 0:
             arcade.play_sound(self.kill_sound)
             view = GameOverView()
@@ -323,6 +343,9 @@ class GameView(arcade.View):
 
 
 class GameOverView(arcade.View):
+    '''
+    Class representing the end game screen.
+    '''
 
     def __init__(self):
         super().__init__()
@@ -334,13 +357,107 @@ class GameOverView(arcade.View):
         arcade.start_render()
         arcade.draw_text("Gra skończona", SCREEN_WIDTH / 2, SCREEN_HEIGHT/1.3,
                          arcade.color.YELLOW_ORANGE, font_size=40, anchor_x="center")
-        arcade.draw_text("Kliknij, aby zagrać ponownie.", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.5,
+        arcade.draw_text("Zagraj ponownie - nacisnij P", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.5,
+                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+        arcade.draw_text("Menu - nacisnij spację", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.7,
+                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.P:
+            view = ModeView()
+            self.window.show_view(view)
+            self.window.set_mouse_visible(True)
+        elif key == arcade.key.SPACE:
+            view = MenuView()
+            self.window.show_view(view)
+            self.window.set_mouse_visible(True)
+
+
+class BestScoreView(arcade.View):
+    '''
+    Class representing a screen with a table of best results.
+    '''
+
+    def on_show(self):
+        arcade.set_background_color(arcade.color.BLACK)
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text("Najlepsze wyniki", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.15,
+                         arcade.color.YELLOW_ORANGE, font_size=40, anchor_x="center")
+        arcade.draw_text("Aby wrócić do Menu wciśnij spację.", SCREEN_WIDTH / 2, 10,
                          arcade.color.YELLOW_ORANGE, font_size=15, anchor_x="center")
 
-    def on_mouse_press(self, x, y, button, modifiers):
-        view = LevelView()
-        self.window.show_view(view)
-        self.window.set_mouse_visible(True)
+        #Draw tables
+        arcade.draw_text('ŁATWY', 190, SCREEN_HEIGHT / 1.4,
+                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+        arcade.draw_text('ŚREDNI', 430, SCREEN_HEIGHT / 1.4,
+                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+        arcade.draw_text('TRUDNY', 680, SCREEN_HEIGHT / 1.4,
+                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+
+        arcade.draw_line(20, SCREEN_HEIGHT / 1.4, SCREEN_WIDTH - 20, SCREEN_HEIGHT / 1.4, arcade.color.YELLOW_ORANGE)
+        arcade.draw_line(310, 100, 310, SCREEN_HEIGHT / 1.3, arcade.color.YELLOW_ORANGE)
+        arcade.draw_line(560, 100, 560, SCREEN_HEIGHT / 1.3, arcade.color.YELLOW_ORANGE)
+        arcade.draw_line(80, 100, 80, SCREEN_HEIGHT / 1.3, arcade.color.YELLOW_ORANGE)
+
+        for index in range(1, 11):
+            arcade.draw_text('%s.' % index, 60, 425 - 30 * index,
+                             arcade.color.YELLOW_ORANGE, font_size=15, anchor_x="center")
+
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.SPACE:
+            view = MenuView()
+            self.window.show_view(view)
+            self.window.set_mouse_visible(True)
+
+
+class InstructionView(arcade.View):
+    '''
+    Class representing the game instruction screen.
+    '''
+
+    def __init__(self):
+        super().__init__()
+        self.up_key = arcade.load_texture('./images/up_down.png')
+        self.key_right = arcade.load_texture('./images/right_left.png')
+
+    def on_show(self):
+        arcade.set_background_color(arcade.color.BLACK)
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text("Instrukcja gry", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.15,
+                         arcade.color.YELLOW_ORANGE, font_size=40, anchor_x="center")
+        arcade.draw_text("Celem gry jest zdobyć jak największej ilości punktów.\n"
+                         "Punkty uzyskuje się poprzez pochłanianie Pacmanem \n"
+                         "kulek rozmieszczonych na mapie. Przy czym ważne jest \n"
+                         "unikanie wrogo nastawionych przeciwników, którymi są \n"
+                         "Blinky, Pinky, Inky i Clyde.\n"
+                         "Kontakt z choć jednym z nich oznacza utratę jednego życia.\n"
+                         "W ciągu całej rozgrywki gracz ma do dyspozycji tylko 3 życia.\n"
+                         "Do poruszania Pacmanem służą strzałki\n",
+                         400, SCREEN_HEIGHT / 2.3,
+                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x='center')
+        arcade.draw_lrwh_rectangle_textured(100, 200, 30, 60, self.up_key)
+        arcade.draw_text("- w górę", 190, 235,
+                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+        arcade.draw_text("- w dół", 185, 200,
+                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+        arcade.draw_lrwh_rectangle_textured(400, 200, 30, 60, self.key_right)
+        arcade.draw_text("- w prawo", 490, 235,
+                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+        arcade.draw_text("- w lewo", 485, 200,
+                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+        arcade.draw_text("Aby wrócić do Menu wciśnij spację.", SCREEN_WIDTH / 2, 10,
+                         arcade.color.YELLOW_ORANGE, font_size=15, anchor_x="center")
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.SPACE:
+            view = MenuView()
+            self.window.show_view(view)
+            self.window.set_mouse_visible(True)
 
 
 def main():
