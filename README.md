@@ -11,11 +11,11 @@ Pac-man is a very well know arcade game and this project is my version of this g
 **Arcade 2.5.7** - library for creating video games.
 
 ### How to run this app?
-1. Clone the template project: 
+1. Clone the template project:  
 `git clone  https://github.com/natalia185/Game-Template pacman`
-2. Go to folder:
+2. Go to folder:  
 `cd pacman `
-3. Install the project's development and runtime requirements:
+3. Install the project's development and runtime requirements:  
 `pip install -r requirements.txt`
-4. Run the game:
+4. Run the game:  
 `python game.py `
