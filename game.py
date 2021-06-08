@@ -3,7 +3,6 @@ import random
 import math
 import maps
 import points
-import pickle
 
 
 #Global constants
@@ -13,14 +12,12 @@ SCREEN_TITLE = 'PACMAN'
 SPRITE_SCALING = 0.5
 PLAYER_MOVEMENT_SPEED = 5
 ENEMY_MOVEMENT_SPEED = 1
-ENEMY_LIST = ["./images/pink.png", "./images/blue.png", "./images/orange.png", "./images/red.png"]
 
 
 class MenuView(arcade.View):
     '''
     Class representing the game menu screen.
     '''
-
     def __init__(self):
         super().__init__()
         self.logo = arcade.load_texture("./images/logo.png")
@@ -33,11 +30,15 @@ class MenuView(arcade.View):
         arcade.draw_lrwh_rectangle_textured(300, 530, 200, 50, self.logo)
         arcade.draw_text('Menu', SCREEN_WIDTH/2, SCREEN_HEIGHT/1.3,
                          arcade.color.YELLOW_ORANGE, font_size=30, anchor_x="center")
-        arcade.draw_text('Graj - naciśnij P', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.5,
+        arcade.draw_text('Graj - naciśnij P', 370, SCREEN_HEIGHT / 1.5,
                          arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
-        arcade.draw_text('Instrukcja  - naciśnij I', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.65,
+        arcade.draw_text('Instrukcja  - naciśnij I', 400, SCREEN_HEIGHT / 1.85,
                          arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
-        arcade.draw_text('Najlepsze wyniki - naciśnij N', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.85,
+        arcade.draw_text('Najlepsze wyniki - naciśnij N', 435, SCREEN_HEIGHT / 1.65,
+                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+        arcade.draw_text('O autorze - naciśnij A', 400, SCREEN_HEIGHT / 2.1,
+                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+        arcade.draw_text('ZAMKNIJ - esc', SCREEN_WIDTH / 2, 15,
                          arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
 
     def on_key_press(self, key, modifiers):
@@ -53,13 +54,18 @@ class MenuView(arcade.View):
             view = BestScoreView()
             self.window.show_view(view)
             self.window.set_mouse_visible(True)
+        elif key == arcade.key.ESCAPE:
+            self.window.close()
+        elif key == arcade.key.A:
+            view = AuthorView()
+            self.window.show_view(view)
+            self.window.set_mouse_visible(True)
 
 
 class ModeView(arcade.View):
     '''
     Class representing the screen with the choice of difficulty mode.
     '''
-
     def on_show(self):
         arcade.set_background_color(arcade.color.BLACK)
 
@@ -124,7 +130,6 @@ class Enemy(arcade.Sprite):
     '''
     Class represents enemies on screen.
     '''
-
     def follow_sprite(self, player_sprite):
         '''
         The function will move the current sprite in the direction of
@@ -154,7 +159,6 @@ class GameView(arcade.View):
     '''
     Class creating game and game view.
     '''
-
     def __init__(self):
         super().__init__()
 
@@ -179,7 +183,7 @@ class GameView(arcade.View):
         self.player_lives = 3
         self.player_live_image = None
 
-        #Load sounds
+        #Load sounds from https://mixkit.co/
         self.collect_points_sound = arcade.load_sound("./sounds/mixkit-game-ball-tap-2073.wav")
         self.kill_sound = arcade.load_sound("./sounds/mixkit-player-losing-or-failing-2042.wav")
         self.next_level_sound = arcade.load_sound("./sounds/mixkit-extra-bonus-in-a-video-game-2045.wav")
@@ -216,11 +220,21 @@ class GameView(arcade.View):
         self.physics_engine = arcade.PhysicsEngineSimple(self.player_sprite, self.wall_list)
 
         #Set up enemies
-        for enemy_im in ENEMY_LIST:
-            enemy = Enemy(enemy_im, SPRITE_SCALING)
-            enemy.center_x = 720
-            enemy.center_y = random.randint(80, SCREEN_HEIGHT - 100)
-            self.enemy_list.append(enemy)
+        enemy = Enemy('./images/pink.png', SPRITE_SCALING)
+        enemy.position = (370, 70)
+        self.enemy_list.append(enemy)
+
+        enemy = Enemy('./images/blue.png', SPRITE_SCALING)
+        enemy.position = (370, 530)
+        self.enemy_list.append(enemy)
+
+        enemy = Enemy('./images/red.png', SPRITE_SCALING)
+        enemy.position = (720, 150)
+        self.enemy_list.append(enemy)
+
+        enemy = Enemy('./images/orange.png', SPRITE_SCALING)
+        enemy.position = (720, 500)
+        self.enemy_list.append(enemy)
 
         #Load player live
         self.player_live_image = arcade.load_texture("./images/pacman_live.png")
@@ -283,7 +297,7 @@ class GameView(arcade.View):
         #End game
         if self.player_lives == 0:
             arcade.play_sound(self.kill_sound)
-            view = GameOverView()
+            view = GameOverView(self)
             self.window.show_view(view)
             self.window.set_mouse_visible(True)
 
@@ -346,9 +360,9 @@ class GameOverView(arcade.View):
     '''
     Class representing the end game screen.
     '''
-
-    def __init__(self):
+    def __init__(self, gameview):
         super().__init__()
+        self.game_view = gameview
 
     def on_show(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -357,10 +371,15 @@ class GameOverView(arcade.View):
         arcade.start_render()
         arcade.draw_text("Gra skończona", SCREEN_WIDTH / 2, SCREEN_HEIGHT/1.3,
                          arcade.color.YELLOW_ORANGE, font_size=40, anchor_x="center")
-        arcade.draw_text("Zagraj ponownie - nacisnij P", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.5,
+        arcade.draw_text(f"Twój wynik: {self.game_view.score}", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.45,
+                         arcade.color.YELLOW_ORANGE, font_size=30, anchor_x="center")
+        arcade.draw_text("Zagraj ponownie - naciśnij P", SCREEN_WIDTH / 2, 350,
                          arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
-        arcade.draw_text("Menu - nacisnij spację", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.7,
+        arcade.draw_text("Menu - naciśnij spację", SCREEN_WIDTH / 2, 310,
                          arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+        arcade.draw_text('ZAMKNIJ - esc', SCREEN_WIDTH / 2, 15,
+                         arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.P:
@@ -371,13 +390,14 @@ class GameOverView(arcade.View):
             view = MenuView()
             self.window.show_view(view)
             self.window.set_mouse_visible(True)
+        elif key == arcade.key.ESCAPE:
+            self.window.close()
 
 
 class BestScoreView(arcade.View):
     '''
     Class representing a screen with a table of best results.
     '''
-
     def on_show(self):
         arcade.set_background_color(arcade.color.BLACK)
 
@@ -405,7 +425,6 @@ class BestScoreView(arcade.View):
             arcade.draw_text('%s.' % index, 60, 425 - 30 * index,
                              arcade.color.YELLOW_ORANGE, font_size=15, anchor_x="center")
 
-
     def on_key_press(self, key, modifiers):
         if key == arcade.key.SPACE:
             view = MenuView()
@@ -417,7 +436,6 @@ class InstructionView(arcade.View):
     '''
     Class representing the game instruction screen.
     '''
-
     def __init__(self):
         super().__init__()
         self.up_key = arcade.load_texture('./images/up_down.png')
@@ -430,7 +448,7 @@ class InstructionView(arcade.View):
         arcade.start_render()
         arcade.draw_text("Instrukcja gry", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.15,
                          arcade.color.YELLOW_ORANGE, font_size=40, anchor_x="center")
-        arcade.draw_text("Celem gry jest zdobyć jak największej ilości punktów.\n"
+        arcade.draw_text("Celem gry jest zdobycie jak największej ilości punktów.\n"
                          "Punkty uzyskuje się poprzez pochłanianie Pacmanem \n"
                          "kulek rozmieszczonych na mapie. Przy czym ważne jest \n"
                          "unikanie wrogo nastawionych przeciwników, którymi są \n"
@@ -450,6 +468,37 @@ class InstructionView(arcade.View):
                          arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
         arcade.draw_text("- w lewo", 485, 200,
                          arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
+        arcade.draw_text("Aby wrócić do Menu wciśnij spację.", SCREEN_WIDTH / 2, 10,
+                         arcade.color.YELLOW_ORANGE, font_size=15, anchor_x="center")
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.SPACE:
+            view = MenuView()
+            self.window.show_view(view)
+            self.window.set_mouse_visible(True)
+
+
+class AuthorView(arcade.View):
+    '''
+    Class representing a screen with information about the author.
+    '''
+    def on_show(self):
+        arcade.set_background_color(arcade.color.BLACK)
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text("Kilka słów o autorze", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.2,
+                         arcade.color.YELLOW_ORANGE, font_size=40, anchor_x="center")
+        arcade.draw_text("Cześć!\n"
+                         "Mam na imię Natalia i jestem studentką Politechniki Wrocławskiej.\n"
+                         "Niniejsza gra została napisana na potrzeby kursu z programowania\n"
+                         "i jest moją wersją popularnej niegdyś gry arkadowej Pac-man.\n\n"
+                         "Dlaczego akurat Pac-man? Była to jedna z pierwszych gier \n"
+                         "w jakie grałam w dzieciństwie. Dlatego też kiedu usłyszałam \n"
+                         "hasło 'gra arkadowa' to właśnie o tej grze od razu pomyślałam.\n\n"
+                         "Mam nadzieję, że moja wersja gry się wam spodoba. Miłej zabawy :)",
+                         SCREEN_WIDTH / 2, 260,
+                         arcade.color.YELLOW_ORANGE, font_size=18, anchor_x="center")
         arcade.draw_text("Aby wrócić do Menu wciśnij spację.", SCREEN_WIDTH / 2, 10,
                          arcade.color.YELLOW_ORANGE, font_size=15, anchor_x="center")
 
