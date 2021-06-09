@@ -14,6 +14,25 @@ PLAYER_MOVEMENT_SPEED = 5
 ENEMY_MOVEMENT_SPEED = 1
 
 
+def top(txt_file):
+    '''
+    Function takes data from a file and creates a list with the best results.
+    '''
+    score_list = []
+    with open(txt_file, 'r') as file:
+        for line in file:
+            score = line.strip('\n')
+            score_list.append(score)
+        score_list.sort(reverse=True)
+    return score_list
+
+
+#Global constants - list with best scores
+EASY_LEADER = top('best_easy.txt')
+MEDIUM_LEADER = top('best_medium.txt')
+HARD_LEADER = top('best_hard.txt')
+
+
 class MenuView(arcade.View):
     '''
     Class representing the game menu screen.
@@ -294,8 +313,30 @@ class GameView(arcade.View):
             self.player_sprite.position = (50, 290)
             self.player_lives -= 1
 
-        #End game
+        #End game and write scores
         if self.player_lives == 0:
+            if self.user_mode == 1:
+                if str(self.score) > EASY_LEADER[-1]:
+                    with open('best_easy.txt', 'w') as file:
+                        EASY_LEADER[-1] = str(self.score)
+                        EASY_LEADER.sort(reverse=True)
+                        new_score_list = [score + '\n' for score in EASY_LEADER]
+                        file.writelines(new_score_list)
+            elif self.user_mode == 2:
+                if str(self.score) > MEDIUM_LEADER[-1]:
+                    with open('best_medium.txt', 'w') as file:
+                        MEDIUM_LEADER[-1] = str(self.score)
+                        MEDIUM_LEADER.sort(reverse=True)
+                        new_score_list = [score + '\n' for score in MEDIUM_LEADER]
+                        file.writelines(new_score_list)
+            elif self.user_mode == 3:
+                if str(self.score) > HARD_LEADER[-1]:
+                    with open('best_hard.txt', 'w') as file:
+                        HARD_LEADER[-1] = str(self.score)
+                        HARD_LEADER.sort(reverse=True)
+                        new_score_list = [score + '\n' for score in HARD_LEADER]
+                        file.writelines(new_score_list)
+
             arcade.play_sound(self.kill_sound)
             view = GameOverView(self)
             self.window.show_view(view)
@@ -425,6 +466,21 @@ class BestScoreView(arcade.View):
             arcade.draw_text('%s.' % index, 60, 425 - 30 * index,
                              arcade.color.YELLOW_ORANGE, font_size=15, anchor_x="center")
 
+        #Add scores
+        with open('best_easy.txt') as file1, open('best_medium.txt') as file2, open('best_hard.txt') as file3:
+            y = 0
+            for line in file1:
+                arcade.draw_text(line, 190, 380 - 30 * y, arcade.color.YELLOW_ORANGE, font_size=15, anchor_x="center")
+                y += 1
+            y = 0
+            for line in file2:
+                arcade.draw_text(line, 430, 380 - 30 * y, arcade.color.YELLOW_ORANGE, font_size=15, anchor_x="center")
+                y += 1
+            y = 0
+            for line in file3:
+                arcade.draw_text(line, 680, 380 - 30 * y, arcade.color.YELLOW_ORANGE, font_size=15, anchor_x="center")
+                y += 1
+
     def on_key_press(self, key, modifiers):
         if key == arcade.key.SPACE:
             view = MenuView()
@@ -511,7 +567,7 @@ class AuthorView(arcade.View):
 
 def main():
     '''
-    Main method
+    Function initializes games.
     '''
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     window.set_location(400, 150)
