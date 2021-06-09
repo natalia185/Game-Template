@@ -22,7 +22,7 @@ def top(txt_file):
     with open(txt_file, 'r') as file:
         for line in file:
             score = line.strip('\n')
-            score_list.append(score)
+            score_list.append(int(score))
         score_list.sort(reverse=True)
     return score_list
 
@@ -42,9 +42,15 @@ class MenuView(arcade.View):
         self.logo = arcade.load_texture("./images/logo.png")
 
     def on_show(self):
+        '''
+        Called when this view is shown.
+        '''
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
+        '''
+        Render the screen.
+        '''
         arcade.start_render()
         arcade.draw_lrwh_rectangle_textured(300, 530, 200, 50, self.logo)
         arcade.draw_text('Menu', SCREEN_WIDTH/2, SCREEN_HEIGHT/1.3,
@@ -61,6 +67,9 @@ class MenuView(arcade.View):
                          arcade.color.YELLOW_ORANGE, font_size=20, anchor_x="center")
 
     def on_key_press(self, key, modifiers):
+        '''
+        Called when a key is pressed.
+        '''
         if key == arcade.key.P:
             view = ModeView()
             self.window.show_view(view)
@@ -86,9 +95,15 @@ class ModeView(arcade.View):
     Class representing the screen with the choice of difficulty mode.
     '''
     def on_show(self):
+        '''
+        Called when this view is shown.
+        '''
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
+        '''
+        Render the screen.
+        '''
         arcade.start_render()
         arcade.draw_text('Wybierz poziom trudności', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.3,
                          arcade.color.YELLOW_ORANGE, font_size=30, anchor_x="center")
@@ -102,6 +117,9 @@ class ModeView(arcade.View):
                          arcade.color.YELLOW_ORANGE, font_size=15, anchor_x="center")
 
     def on_key_press(self, key, modifiers):
+        '''
+        Called when a key is pressed.
+        '''
         if key == arcade.key.L:
             view = GameView()
             view.user_mode = 1
@@ -289,6 +307,8 @@ class GameView(arcade.View):
             self.player_sprite.change_x = 0
 
     def update(self, delta_time):
+        '''Movement and game logic.'''
+
         #Player movement
         self.physics_engine.update()
 
@@ -316,25 +336,25 @@ class GameView(arcade.View):
         #End game and write scores
         if self.player_lives == 0:
             if self.user_mode == 1:
-                if str(self.score) > EASY_LEADER[-1]:
+                if self.score > EASY_LEADER[-1]:
                     with open('best_easy.txt', 'w') as file:
-                        EASY_LEADER[-1] = str(self.score)
+                        EASY_LEADER[-1] = self.score
                         EASY_LEADER.sort(reverse=True)
-                        new_score_list = [score + '\n' for score in EASY_LEADER]
+                        new_score_list = [str(score) + '\n' for score in EASY_LEADER]
                         file.writelines(new_score_list)
             elif self.user_mode == 2:
-                if str(self.score) > MEDIUM_LEADER[-1]:
+                if self.score > MEDIUM_LEADER[-1]:
                     with open('best_medium.txt', 'w') as file:
-                        MEDIUM_LEADER[-1] = str(self.score)
+                        MEDIUM_LEADER[-1] = self.score
                         MEDIUM_LEADER.sort(reverse=True)
-                        new_score_list = [score + '\n' for score in MEDIUM_LEADER]
+                        new_score_list = [str(score) + '\n' for score in MEDIUM_LEADER]
                         file.writelines(new_score_list)
             elif self.user_mode == 3:
-                if str(self.score) > HARD_LEADER[-1]:
+                if self.score > HARD_LEADER[-1]:
                     with open('best_hard.txt', 'w') as file:
-                        HARD_LEADER[-1] = str(self.score)
+                        HARD_LEADER[-1] = self.score
                         HARD_LEADER.sort(reverse=True)
-                        new_score_list = [score + '\n' for score in HARD_LEADER]
+                        new_score_list = [str(score) + '\n' for score in HARD_LEADER]
                         file.writelines(new_score_list)
 
             arcade.play_sound(self.kill_sound)
@@ -380,10 +400,17 @@ class GameView(arcade.View):
             self.setup()
 
     def on_show(self):
+        '''
+        Called when this view is shown.
+        '''
+
         #Set the background color
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
+        '''
+        Render the screen.
+        '''
         arcade.start_render()
         self.wall_list.draw()
         self.point_list.draw()
@@ -406,9 +433,15 @@ class GameOverView(arcade.View):
         self.game_view = gameview
 
     def on_show(self):
+        '''
+        Called when this view is shown.
+        '''
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
+        '''
+        Render the screen.
+        '''
         arcade.start_render()
         arcade.draw_text("Gra skończona", SCREEN_WIDTH / 2, SCREEN_HEIGHT/1.3,
                          arcade.color.YELLOW_ORANGE, font_size=40, anchor_x="center")
@@ -423,6 +456,9 @@ class GameOverView(arcade.View):
 
 
     def on_key_press(self, key, modifiers):
+        '''
+        Called when a key is pressed.
+        '''
         if key == arcade.key.P:
             view = ModeView()
             self.window.show_view(view)
@@ -440,9 +476,15 @@ class BestScoreView(arcade.View):
     Class representing a screen with a table of best results.
     '''
     def on_show(self):
+        '''
+        Called when this view is shown.
+        '''
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
+        '''
+        Render the screen.
+        '''
         arcade.start_render()
         arcade.draw_text("Najlepsze wyniki", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.15,
                          arcade.color.YELLOW_ORANGE, font_size=40, anchor_x="center")
@@ -482,6 +524,9 @@ class BestScoreView(arcade.View):
                 y += 1
 
     def on_key_press(self, key, modifiers):
+        '''
+        Called when a key is pressed.
+        '''
         if key == arcade.key.SPACE:
             view = MenuView()
             self.window.show_view(view)
@@ -498,9 +543,15 @@ class InstructionView(arcade.View):
         self.key_right = arcade.load_texture('./images/right_left.png')
 
     def on_show(self):
+        '''
+        Called when this view is shown.
+        '''
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
+        '''
+        Render the screen.
+        '''
         arcade.start_render()
         arcade.draw_text("Instrukcja gry", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.15,
                          arcade.color.YELLOW_ORANGE, font_size=40, anchor_x="center")
@@ -528,6 +579,9 @@ class InstructionView(arcade.View):
                          arcade.color.YELLOW_ORANGE, font_size=15, anchor_x="center")
 
     def on_key_press(self, key, modifiers):
+        '''
+        Called when a key is pressed.
+        '''
         if key == arcade.key.SPACE:
             view = MenuView()
             self.window.show_view(view)
@@ -539,9 +593,15 @@ class AuthorView(arcade.View):
     Class representing a screen with information about the author.
     '''
     def on_show(self):
+        '''
+        Called when this view is shown.
+        '''
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
+        '''
+        Render the screen.
+        '''
         arcade.start_render()
         arcade.draw_text("Kilka słów o autorze", SCREEN_WIDTH / 2, SCREEN_HEIGHT / 1.2,
                          arcade.color.YELLOW_ORANGE, font_size=40, anchor_x="center")
@@ -559,6 +619,9 @@ class AuthorView(arcade.View):
                          arcade.color.YELLOW_ORANGE, font_size=15, anchor_x="center")
 
     def on_key_press(self, key, modifiers):
+        '''
+        Called when a key is pressed.
+        '''
         if key == arcade.key.SPACE:
             view = MenuView()
             self.window.show_view(view)
@@ -567,7 +630,7 @@ class AuthorView(arcade.View):
 
 def main():
     '''
-    Function initializes games.
+    Function initializes game.
     '''
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE)
     window.set_location(400, 150)
